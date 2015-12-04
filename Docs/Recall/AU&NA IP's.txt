@@ -1,0 +1,77 @@
+production environment:Region (NA - North America)
+-----------------------------------------------------------------------------------------
+     Instance Name     "Instance Name/Private IP"     DNS
+-----------------------------------------------------------------------------------------
+RSDMT App 1    US-RSDMT-PRD-App1    10.169.3.13      app1.commandig.govern.recall.com
+RSDMT App 2    US-RSDMT-PRD-App2    10.169.3.123     app2.commandig.govern.recall.com
+Zookeeper 1   US-RSDMT-PRD-ZK-Srv1   10.169.3.52      srv1.rsd-zk.recall.com
+Zookeeper 2   US-RSDMT-PRD-ZK-Srv2   10.169.3.93      srv2.rsd-zk.recall.com
+Zookeeper 3   US-RSDMT-PRD-ZK-Srv3   10.169.3.78      srv3.rsd-zk.recall.com
+Solr1    US-RSDMT-PRD-Solr-Srv1   10.169.3.8     srv1.rsd-solr.recall.com
+Solr2    US-RSDMT-PRD-Solr-Srv2   10.169.3.112    srv2.rsd-solr.recall.com
+	 US-RSDMT-PRD-Solr-Srv3   10.169.3.48
+	 US-RSDMT-PRD-Solr-Srv4   10.169.3.68
+RSDMT HAProxy 1  US-RSDMT-PRD-HAProxy1   10.169.4.62 / 52.5.1.124  commandig.govern.recall.com
+RSDMT HAProxy 2  US-RSDMT-PRD-HAProxy2   10.169.4.78 / 52.5.72.135  commandig.govern.recall.com
+
+
+
+OpenAM 1   US-IDP-PRD-OpenAM1    10.169.3.20      openam1.recall.com
+OpenAM 2   US-IDP-PRD-OpenAM2    10.169.3.81      openam2.recall.com
+OpenDJ 1   US-IDP-PRD-OpenDJ1    10.169.3.53      opendj1.recall.com
+OpenDJ 2   US-IDP-PRD-OpenDJ2    10.169.3.73      opendj2.recall.com
+OpenIDM 1   US-IDP-PRD-OpenIDM1    10.169.3.57      openidm1.recall.com
+OpenIDM 2   US-IDP-PRD-OpenIDM2    10.169.3.85      openidm1.recall.com
+
+
+
+Portal App 1          US-Portal-PRD-App1     10.169.3.50      portal.recall.com   --no access  asking pwd for root dir
+Portal App 2          US-Portal-PRD-App2     10.169.3.119         portal.recall.com   -- no access asking pwd for root dir
+Portal HAProxy 1   US-Portal-PRD-HAProxy1       10.169.4.16 /54.84.169.244  portal.recall.com
+Portal HAProxy 2      US-Portal-PRD-HAProxy2       10.169.4.108 / 54.174.89.71  portal.recall.com
+
+
+
+
+AU-RSDMT-PRD-App1  10.192.2.24
+AU-RSDMT-PRD-App2  10.192.2.120
+AU-RSDMT-PRD-ZK-Srv1  10.192.2.27
+AU-RSDMT-PRD-ZK-Srv3  10.192.2.26
+AU-RSDMT-PRD-ZK-Srv2  10.192.2.119
+AU-RSDMT-PRD-Solr-Srv1  10.192.2.25
+AU-RSDMT-PRD-Solr-Srv2  10.192.2.121
+AU-RSDMT-PRD-Solr-Srv3	10.192.2.39
+AU-RSDMT-PRD-Solr-Srv4	10.192.2.112
+AU-RSDMT-PRD-HAProxy1  10.192.2.55/10.192.1.17
+AU-RSDMT-PRD-HAProxy2  10.192.1.112
+AU-Portal-PRD-App2  10.192.2.94
+
+
+
+
+AU-RSDMT-UAT-HAProxy1 Private IP: 10.192.5.44
+AU-RSDMT-UAT-HAProxy2 Private IP: 10.192.5.68
+AU-RSDMT-UAT-ZK-Srv1 Private IP: 10.192.6.48
+AU-RSDMT-UAT-ZK-Srv2 Private IP: 10.192.6.78
+AU-RSDMT-UAT-ZK-Srv3 Private IP: 10.192.6.39
+AU-RSDMT-UAT-Solr-Srv1 Private IP:10.192.6.47
+AU-RSDMT-UAT-Solr-Srv2 Private IP: 10.192.6.80
+AU-RSDMT-UAT-Solr-Srv3	10.192.6.11
+AU-RSDMT-UAT-Solr-Srv4	10.192.6.123
+AU-RSDMT-UAT-App1 Private IP:10.192.6.49
+AU-RSDMT-UAT-App2 Private IP: 10.192.6.79
+
+
+
+
+
+
+curl "http://10.169.3.8:8085/solr/admin/cores?action=STATUS"
+
+
+
+
+
+
+
+netstat -nat | grep -i LISTEN

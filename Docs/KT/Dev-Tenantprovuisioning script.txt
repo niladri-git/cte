@@ -1,0 +1,133 @@
+#!/bin/bash
+
+#title           :newTenantProvision.sh
+#description     :Provisiong new RSD Tenant in Recall Environment
+#usage           :sh newTenantProvision.sh or ./newTenantProvision.sh
+## Please makesure RSDMT MySQL init, MySQL master data and Solr in script direcotry
+
+MYSQL_HOST_DB=anz-rsdmt-uat-db.cbtwjrgbs9oq.ap-southeast-2.rds.amazonaws.com
+MYSQL_USER_DB=rsdmtadm
+MYSQL_PASSWD_DB=I9GjEFd47mTV1
+
+MYSQL_INIT_SCRIPTS=mysql/rsdmt_3.4.6.4_mysql_init_scripts
+MYSQL_MASTER_DATA=mysql/rsdmt_3.4.6.4_mysql_master_data
+MYSQL_GM_INIT=glass_init.sql
+MYSQL_PM_INIT=policymanager_init.sql
+MYSQL_GM_MASTER=glass2_21-08-15.sql ## updarte the master data version accoding to the FP changes
+MYSQL_PM_MASTER=IGP_CIG1_21_10_15.sql ## updarte the master data version accoding to the FP changes
+
+SOLR_HOST=10.192.6.47
+SOLR_PORT=8085
+SOLR_SCRIPT_DIR=solr/scripts/cloud-scripts
+SOLR_CONF_DIR=solr/solr/default/conf
+
+ZK_HOST=localhost
+ZK_HOST1=srv1.rsd-zk.au.uat.recall.com
+ZK_HOST2=srv2.rsd-zk.au.uat.recall.com
+ZK_HOST3=srv3.rsd-zk.au.uat.recall.com
+ZK_PORT=2181
+ZK_CONFIG_DIR=/opt/RSDGlassRegUtil
+ZK_PM_CONFIG_DIR=/opt/RSDGlassRegUtil/zk-3.4.6.4/config-pm-3.4.6.4/tenants
+ZK_GM_CONFIG_DIR=/opt/RSDGlassRegUtil/zk-3.4.6.4/config-gm-3.4.6.4/tenants
+ZK_GOVAPPS_CONFIG_DIR=/opt/RSDGlassRegUtil/zk-3.4.6.4/config-govapps-3.4.6-75/tenants/
+
+LOG=/opt/newTenantAutoProvision/logs
+
+TenantCount=0
+tenantList=tenantDetails.txt
+
+if      [ ! -d "/opt/newTenantAutoProvision/logs" ]
+        then mkdir /opt/newTenantAutoProvision/logs
+fi
+
+while read line
+do
+    begin=$(date +"%s")
+    tenantID=`echo $line| cut -d' ' -f1`
+    efssUsername=`echo $line| cut -d' ' -f2`
+    efssPasswd=`echo $line| cut -d' ' -f3`
+    efssEndpoint=`echo $line| cut -d' ' -f4`
+    authServerDomain=`echo $line| cut -d' ' -f5`
+    companyId=`echo $line| cut -d' ' -f6`
+
+    echo "Beginning provisioning tenant $tenantID at `date '+%d/%m/%Y_%H:%M:%S'`"
+	###Access the RDS DB1
+    echo "## Provisiong new Tenant - $tenantID ##" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+    echo "## Creating MySQL DB and populating the master data...DB1 ##" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+
+    db_exists=$(mysql -h $MYSQL_HOST_DB -u $MYSQL_USER_DB -p$MYSQL_PASSWD_DB -e "show databases" | grep -q -w "$tenantID"_IGP)
+	OUT=$?
+
+    if [ $OUT -eq 0 ]; then
+		echo "Database already exists, assuming this Tenant already Provisioned!"
+		continue
+    else
+        IGP_CREATE_DB="CREATE DATABASE "$tenantID"_IGP;";
+        GM_CREATE_DB="CREATE DATABASE "$tenantID"_GM;";
+        mysql -h $MYSQL_HOST_DB -u $MYSQL_USER_DB -p$MYSQL_PASSWD_DB <<EOF
+        $IGP_CREATE_DB
+        $GM_CREATE_DB
+EOF
+        mysql -h $MYSQL_HOST_DB -u $MYSQL_USER_DB -p$MYSQL_PASSWD_DB "$tenantID"_IGP < $MYSQL_INIT_SCRIPTS/$MYSQL_PM_INIT;
+        mysql -h $MYSQL_HOST_DB -u $MYSQL_USER_DB -p$MYSQL_PASSWD_DB "$tenantID"_IGP < $MYSQL_MASTER_DATA/$MYSQL_PM_MASTER;
+        mysql -h $MYSQL_HOST_DB -u $MYSQL_USER_DB -p$MYSQL_PASSWD_DB "$tenantID"_GM  < $MYSQL_INIT_SCRIPTS/$MYSQL_GM_INIT;
+       # mysql -h $MYSQL_HOST_DB -u $MYSQL_USER_DB -p$MYSQL_PASSWD_DB "$tenantID"_GM  < $MYSQL_MASTER_DATA/$MYSQL_GM_MASTER;
+        mysql -h $MYSQL_HOST_DB -u $MYSQL_USER_DB -p$MYSQL_PASSWD_DB "$tenantID"_GM  < $MYSQL_MASTER_DATA/VIEW_ACTION_FIGURES.sql;
+    fi
+	
+	###Creating new direcotry for the Tenant Provisiong and copying the temaplates
+	
+    echo "## Creating new direcotry for the Tenant Provisiong and copying the temaplates... ##" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+    runuser -l zkadmin -c "mkdir $ZK_CONFIG_DIR/newTenantProvision/$tenantID"
+    runuser -l zkadmin -c "cp $ZK_CONFIG_DIR/newTenantProvision/templates_rds/* $ZK_CONFIG_DIR/newTenantProvision/$tenantID/"
+		
+	###SOLR Config and Collection creation
+	
+    echo "## SOLR Config and Collection creation ##" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+    $SOLR_SCRIPT_DIR/zkcli.sh -zkhost $ZK_HOST1:$ZK_PORT,$ZK_HOST2:$ZK_PORT,$ZK_HOST3:$ZK_PORT/solr -cmd upconfig -confdir $SOLR_CONF_DIR -confname $tenantID | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+    curl "http://"$SOLR_HOST":"$SOLR_PORT"/solr/admin/collections?action=CREATE&name="$tenantID"&numShards=1&replicationFactor=2&maxShardsPerNode=1&collection.configName="$tenantID"" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+
+	###Zookeper Configuration XML creation for GM,PM and GovApps
+	
+    echo "## Zookeper Configuration XML creation for GM,PM and GovApps ##" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_TenantID/"$tenantID"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/govapps.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_GM_DBName/"$tenantID"_GM/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_TenantID/"$tenantID"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_IGP_DBName/"$tenantID"_IGP/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_SOLR_Collection_Name/"$tenantID"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_EFSS_User_Name/"$efssUsername"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_EFSS_Passwd/"$efssPasswd"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_EFSS_Endpoint/"$efssEndpoint"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_Auth_Server_Domain/"$authServerDomain"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_Company_Id/"$companyId"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_TenantID/"$tenantID"/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/pm.xml"
+    runuser -l zkadmin -c "sed -i "s/MODIFY_ME_TO_IGP_DBName/"$tenantID"_IGP/g" $ZK_CONFIG_DIR/newTenantProvision/$tenantID/pm.xml"
+
+    echo "## Zookeper Configuration Import for GM,PM and GovApps ##" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+		
+    ### GovApps Import
+    $ZK_CONFIG_DIR/regutil.sh --configuration-directory $ZK_GOVAPPS_CONFIG_DIR --import --zookeeper localhost:2181 --input-xml-file $ZK_CONFIG_DIR/newTenantProvision/$tenantID/govapps.xml | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+		
+    ### GM Import
+    $ZK_CONFIG_DIR/regutil.sh --configuration-directory $ZK_GM_CONFIG_DIR --import --zookeeper $ZK_HOST:2181 --input-xml-file $ZK_CONFIG_DIR/newTenantProvision/$tenantID/gm.xml | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+		
+    ### PM Import
+    $ZK_CONFIG_DIR/regutil.sh --configuration-directory $ZK_PM_CONFIG_DIR --import --zookeeper $ZK_HOST:2181 --input-xml-file $ZK_CONFIG_DIR/newTenantProvision/$tenantID/pm.xml | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+		
+	java -cp RSDGLASSRECALL-3.4.6-CIG1.jar com.rsd.recall.governanceManager.NewTenant https://openam.uat.recall.com/openam/oauth2/access_token RequestWebRSDConnector dra@R4pUpreZ  https://commandig.govern.au.uat.recall.com/RSDGlass "$tenantID" Recall-MasterData-CIG1.xlsx "" "GovernanceAdmin-CIGP,GovernanceAdmin-CIG,GovernanceUser-CIGP,GovernanceUser-CIG,GovernanceViewOnly-CIGP,GovernanceViewOnly-CIG,RequestWebRSDConnector,RequestWebEFSSConnector,AutomatedGovernance,RSDOperationsManager" "GovernanceAdmin-CIGP,GovernanceAdmin-CIG,GovernanceUser-CIGP,GovernanceUser-CIG,GovernanceViewOnly-CIGP,GovernanceViewOnly-CIG"
+	
+    TenantCount=`expr $TenantCount + 1`
+    echo "##No of Tenants completed in this session is :$TenantCount  ##" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+    echo "##No of Tenants completed in this session is :$TenantCount  ##"
+	
+	termin=$(date +"%s")
+    difftimelps=$(($termin-$begin))
+	
+    echo "$(($difftimelps / 60)) minutes and $(($difftimelps % 60)) seconds taken to provision this $tenantID Tenant" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+	
+	termin=$(date +"%s")
+	difftimelps=$(($termin-$begin))
+	echo "$(($difftimelps / 60)) minutes and $(($difftimelps % 60)) seconds taken to provision this $tenantID Tenant" | tee -a  $LOG/$tenantID-`date +%Y%m%d`.log
+	echo "Finished provisioning tenant $tenantID at `date '+%d/%m/%Y_%H:%M:%S'`"
+	
+done < $tenantList
