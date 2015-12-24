@@ -1,0 +1,243 @@
+root@us-rsdmt-dev-app:/home/ndatta/Ansible# ansible-playbook deploy.yml --extra-vars "URI=ftp.rsd.com/GLASS348-Beta/Distribs/RSDGlassRelease-3.4.8.0-all.zip DEPLOY_WAR=RSDGlass"
+
+PLAY [local] ******************************************************************
+
+TASK: [Remove Old ZIP Extractions] ********************************************
+ok: [localhost]
+
+TASK: [Remove Old WAR Extractions] ********************************************
+ok: [localhost] => (item=RSDGlass)
+ok: [localhost] => (item=RSDGlass.war)
+
+TASK: [Create Directories] ****************************************************
+changed: [localhost] => (item=Backup)
+ok: [localhost] => (item=Download_ZIP)
+ok: [localhost] => (item=Extract_ZIP/RSDGlass)
+ok: [localhost] => (item=Extract_WAR/RSDGlass)
+
+TASK: [Get Artifact Name] *****************************************************
+changed: [localhost]
+
+TASK: [Get Time Stamp] ********************************************************
+changed: [localhost]
+
+TASK: [Check Artifact Download Status] ****************************************
+ok: [localhost]
+
+TASK: [Download ZIP] **********************************************************
+skipping: [localhost]
+
+TASK: [Extract ZIP] ***********************************************************
+changed: [localhost]
+
+TASK: [Extract Deployment WAR] ************************************************
+changed: [localhost]
+
+TASK: [ReBranding RSDGlass] ***************************************************
+changed: [localhost] => (item=['PartnerSpecificGMResources.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+changed: [localhost] => (item=['PartnerSpecificGMResources.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+changed: [localhost] => (item=['PartnerSpecificGMResources.properties', 'application.logo.gm.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+changed: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+changed: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+changed: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'application.logo.gm.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+
+TASK: [ReBranding RSDGlassPolicyManager] **************************************
+skipping: [localhost] => (item=['PartnerSpecificPMResources.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources.properties', 'compagny.logo.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'compagny.logo.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+
+TASK: [ReBranding RSDGLASSGovernanceApps] *************************************
+skipping: [localhost]
+
+TASK: [Create war from new contents] ******************************************
+changed: [localhost]
+
+TASK: [Backup old content] ****************************************************
+changed: [localhost] => (item=RSDGlass)
+changed: [localhost] => (item=RSDGlass.war)
+
+TASK: [Copy New App Dir and War file] *****************************************
+changed: [localhost] => (item=RSDGlass)
+changed: [localhost] => (item=RSDGlass.war)
+
+TASK: [Change Ownership] ******************************************************
+changed: [localhost]
+
+TASK: [Check Tomcat Status] ***************************************************
+changed: [localhost]
+
+PLAY RECAP ********************************************************************
+localhost                  : ok=15   changed=11   unreachable=0    failed=0
+
+root@us-rsdmt-dev-app:/home/ndatta/Ansible#
+root@us-rsdmt-dev-app:/home/ndatta/Ansible# ansible-playbook deploy.yml --extra-vars "URI=ftp.rsd.com/GLASS348-Beta/Distribs/RSDGlassRelease-3.4.8.0-all.zip DEPLOY_WAR=RSDGlassPolicyManager"
+
+PLAY [local] ******************************************************************
+
+TASK: [Remove Old ZIP Extractions] ********************************************
+ok: [localhost]
+
+TASK: [Remove Old WAR Extractions] ********************************************
+ok: [localhost] => (item=RSDGlassPolicyManager)
+ok: [localhost] => (item=RSDGlassPolicyManager.war)
+
+TASK: [Create Directories] ****************************************************
+ok: [localhost] => (item=Backup)
+ok: [localhost] => (item=Download_ZIP)
+ok: [localhost] => (item=Extract_ZIP/RSDGlassPolicyManager)
+ok: [localhost] => (item=Extract_WAR/RSDGlassPolicyManager)
+
+TASK: [Get Artifact Name] *****************************************************
+changed: [localhost]
+
+TASK: [Get Time Stamp] ********************************************************
+changed: [localhost]
+
+TASK: [Check Artifact Download Status] ****************************************
+ok: [localhost]
+
+TASK: [Download ZIP] **********************************************************
+skipping: [localhost]
+
+TASK: [Extract ZIP] ***********************************************************
+changed: [localhost]
+
+TASK: [Extract Deployment WAR] ************************************************
+changed: [localhost]
+
+TASK: [ReBranding RSDGlass] ***************************************************
+skipping: [localhost] => (item=['PartnerSpecificGMResources.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources.properties', 'application.logo.gm.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'application.logo.gm.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+
+TASK: [ReBranding RSDGlassPolicyManager] **************************************
+changed: [localhost] => (item=['PartnerSpecificPMResources.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+changed: [localhost] => (item=['PartnerSpecificPMResources.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+changed: [localhost] => (item=['PartnerSpecificPMResources.properties', 'compagny.logo.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+changed: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+changed: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+changed: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'compagny.logo.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+
+TASK: [ReBranding RSDGLASSGovernanceApps] *************************************
+skipping: [localhost]
+
+TASK: [Create war from new contents] ******************************************
+changed: [localhost]
+
+TASK: [Backup old content] ****************************************************
+changed: [localhost] => (item=RSDGlassPolicyManager)
+changed: [localhost] => (item=RSDGlassPolicyManager.war)
+
+TASK: [Copy New App Dir and War file] *****************************************
+changed: [localhost] => (item=RSDGlassPolicyManager)
+changed: [localhost] => (item=RSDGlassPolicyManager.war)
+
+TASK: [Change Ownership] ******************************************************
+changed: [localhost]
+
+TASK: [Check Tomcat Status] ***************************************************
+changed: [localhost]
+
+PLAY RECAP ********************************************************************
+localhost                  : ok=15   changed=10   unreachable=0    failed=0
+
+root@us-rsdmt-dev-app:/home/ndatta/Ansible# ansible-playbook deploy.yml --extra-vars "URI=ftp.rsd.com/GLASS348-Beta/Distribs/RSDGLASS_GS-GovernanceApps-3.4.8-80.zip DEPLOY_WAR=RSDGLASSGovernanceApps"
+
+PLAY [local] ******************************************************************
+
+TASK: [Remove Old ZIP Extractions] ********************************************
+ok: [localhost]
+
+TASK: [Remove Old WAR Extractions] ********************************************
+ok: [localhost] => (item=RSDGLASSGovernanceApps)
+ok: [localhost] => (item=RSDGLASSGovernanceApps.war)
+
+TASK: [Create Directories] ****************************************************
+ok: [localhost] => (item=Backup)
+ok: [localhost] => (item=Download_ZIP)
+ok: [localhost] => (item=Extract_ZIP/RSDGLASSGovernanceApps)
+ok: [localhost] => (item=Extract_WAR/RSDGLASSGovernanceApps)
+
+TASK: [Get Artifact Name] *****************************************************
+changed: [localhost]
+
+TASK: [Get Time Stamp] ********************************************************
+changed: [localhost]
+
+TASK: [Check Artifact Download Status] ****************************************
+ok: [localhost]
+
+TASK: [Download ZIP] **********************************************************
+skipping: [localhost]
+
+TASK: [Extract ZIP] ***********************************************************
+changed: [localhost]
+
+TASK: [Extract Deployment WAR] ************************************************
+changed: [localhost]
+
+TASK: [ReBranding RSDGlass] ***************************************************
+skipping: [localhost] => (item=['PartnerSpecificGMResources.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources.properties', 'application.logo.gm.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificGMResources_en.properties', 'application.logo.gm.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+
+TASK: [ReBranding RSDGlassPolicyManager] **************************************
+skipping: [localhost] => (item=['PartnerSpecificPMResources.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources.properties', 'compagny.logo.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'customize.logo.file.path=/opt/tomcat/images/'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'])
+skipping: [localhost] => (item=['PartnerSpecificPMResources_en.properties', 'compagny.logo.file.name=CommandIG_box_notagline_200x40_Trans.png'])
+
+TASK: [ReBranding RSDGLASSGovernanceApps] *************************************
+changed: [localhost]
+
+TASK: [Create war from new contents] ******************************************
+changed: [localhost]
+
+TASK: [Backup old content] ****************************************************
+changed: [localhost] => (item=RSDGLASSGovernanceApps)
+changed: [localhost] => (item=RSDGLASSGovernanceApps.war)
+
+TASK: [Copy New App Dir and War file] *****************************************
+changed: [localhost] => (item=RSDGLASSGovernanceApps)
+changed: [localhost] => (item=RSDGLASSGovernanceApps.war)
+
+TASK: [Change Ownership] ******************************************************
+changed: [localhost]
+
+TASK: [Check Tomcat Status] ***************************************************
+changed: [localhost]
+
+PLAY RECAP ********************************************************************
+localhost                  : ok=16   changed=10   unreachable=0    failed=0
+
+root@us-rsdmt-dev-app:/home/ndatta/Ansible#
+
++++
+
+ndatta@us-rsdmt-dev-app:~/Ansible$ ls -ltr Download_ZIP/ Webapps/
+Download_ZIP/:
+total 354472
+-r--r--r-- 1 ndatta cte 296955570 Dec 21 06:24 RSDGlassRelease-3.4.8.0-all.zip
+-r--r--r-- 1 ndatta cte  66017490 Dec 21 06:41 RSDGLASS_GS-GovernanceApps-3.4.8-80.zip
+
+Webapps/:
+total 250508
+drwxr-xr-x 7 tomcat tomcat      4096 Dec 24 03:00 RSDGlass/
+-rw-r--r-- 1 tomcat tomcat 104783631 Dec 24 03:00 RSDGlass.war
+drwxr-xr-x 6 tomcat tomcat      4096 Dec 24 03:03 RSDGlassPolicyManager/
+-rw-r--r-- 1 tomcat tomcat  86491103 Dec 24 03:03 RSDGlassPolicyManager.war
+drwxr-xr-x 5 tomcat tomcat      4096 Dec 24 03:05 RSDGLASSGovernanceApps/
+-rw-r--r-- 1 tomcat tomcat  65224942 Dec 24 03:05 RSDGLASSGovernanceApps.war
+
++++

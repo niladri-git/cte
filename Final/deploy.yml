@@ -1,0 +1,96 @@
+---
+
+- hosts: local
+  user: root
+  gather_facts: no
+
+  vars_files:
+    - config.yml
+
+  tasks:
+
+  - name: Remove Old ZIP Extractions
+    file: path=Extract_ZIP/{{DEPLOY_WAR}} state=absent
+
+  - name: Remove Old WAR Extractions
+    file: path=Extract_WAR/{{item}} state=absent
+    with_items:
+      - "{{DEPLOY_WAR}}"
+      - "{{DEPLOY_WAR}}.war"
+
+  - name: "Create Directories"
+    file: path=/home/ndatta/Ansible/{{item}} state=directory
+    with_items:
+      - Backup
+      - Download_ZIP
+      - Extract_ZIP/{{DEPLOY_WAR}}
+      - Extract_WAR/{{DEPLOY_WAR}}
+
+  - name: "Get Artifact Name"
+    command: basename {{URI}}
+    register: artifact
+
+  - name: "Get Time Stamp"
+    command: date +%d%m%Y_%H%M%S
+    register: timestamp
+
+  - name: "Check Artifact Download Status"
+    stat: path={{ZIP_DOWNLOAD_DIR}}/{{artifact.stdout}}
+    register: artifact_status
+
+  - name: "Download ZIP"
+    get_url: url=ftp://{{FTP_USER}}:{{FTP_PASSWORD}}@{{URI}} dest={{ZIP_DOWNLOAD_DIR}} mode=0444 force=no
+    when: artifact_status.stat.exists == False
+    async: 10000
+
+  - name: "Extract ZIP"
+    unarchive: src={{ZIP_DOWNLOAD_DIR}}/{{artifact.stdout}} dest={{ZIP_EXTRACT_DIR}}/{{DEPLOY_WAR}}
+
+  - name: "Extract Deployment WAR"
+    unarchive: src={{ZIP_EXTRACT_DIR}}/{{DEPLOY_WAR}}/{{DEPLOY_WAR}}.war dest={{WAR_EXTRACT_DIR}}/{{DEPLOY_WAR}}
+
+  - name: "ReBranding RSDGlass"
+    lineinfile:
+      dest={{WAR_EXTRACT_DIR}}/{{DEPLOY_WAR}}/{{GM_PARENT_DIR}}/{{item[0]}}
+      line={{item[1]}}
+    with_nested:
+      - GM_BRANDING_PROPS
+      - GM_LOGO_CHANGES
+    when: DEPLOY_WAR == "RSDGlass"
+        
+  - name: "ReBranding RSDGlassPolicyManager"
+    lineinfile:
+      dest={{WAR_EXTRACT_DIR}}/{{DEPLOY_WAR}}/{{PM_PARENT_DIR}}/{{item[0]}}
+      line={{item[1]}}
+    with_nested:
+      - PM_BRANDING_PROPS
+      - PM_LOGO_CHANGES
+    when: DEPLOY_WAR == "RSDGlassPolicyManager"
+
+  - name: "ReBranding RSDGLASSGovernanceApps"
+    command: cp -f /opt/tomcat/images/logo.png {{WAR_EXTRACT_DIR}}/{{DEPLOY_WAR}}/{{GovApps_PARENT_DIR}}
+    when: DEPLOY_WAR == "RSDGLASSGovernanceApps"
+
+  - name: "Create war from new contents"
+    command: jar -cvf {{WAR_EXTRACT_DIR}}/{{DEPLOY_WAR}}.war {{WAR_EXTRACT_DIR}}/{{DEPLOY_WAR}}
+
+  - name: "Backup old content"
+    command: mv -f {{WEBAPP_DIR}}/{{item}} {{BACKUP_DIR}}/{{item}}.{{timestamp.stdout}}
+    with_items:
+      - "{{DEPLOY_WAR}}"
+      - "{{DEPLOY_WAR}}.war"
+
+  - name: "Copy New App Dir and War file"
+    command: cp -rf {{WAR_EXTRACT_DIR}}/{{item}} {{WEBAPP_DIR}}
+    with_items:
+      - "{{DEPLOY_WAR}}"
+      - "{{DEPLOY_WAR}}.war"
+
+  - name: "Change Ownership"
+    command: chown  -R {{TOMCAT_USER}}:{{TOMCAT_GROUP}} {{WEBAPP_DIR}}
+
+#  - name: "Restart Tomcat"
+#    command: supervisorctl start tomcat
+    
+  - name: "Check Tomcat Status"
+    command: supervisorctl status tomcat

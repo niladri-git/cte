@@ -1,0 +1,29 @@
+---
+
+BACKUP_DIR: '/home/ndatta/Ansible/Backup'
+WEBAPP_DIR: '/home/ndatta/Ansible/Webapps'
+ZIP_DOWNLOAD_DIR: '/home/ndatta/Ansible/Download_ZIP'
+ZIP_EXTRACT_DIR: '/home/ndatta/Ansible/Extract_ZIP'
+WAR_EXTRACT_DIR: '/home/ndatta/Ansible/Extract_WAR'
+
+GM_PARENT_DIR: 'WEB-INF/classes/com/rsd/glass/gui/resources'
+PM_PARENT_DIR: 'WEB-INF/classes/com/rsd/glass/igpgui/resources'
+GovApps_PARENT_DIR: 'VAADIN/themes/govappsTheme/img'
+
+GM_BRANDING_PROPS:
+  - 'PartnerSpecificGMResources.properties'
+  - 'PartnerSpecificGMResources_en.properties'
+
+PM_BRANDING_PROPS:
+  - 'PartnerSpecificPMResources.properties'
+  - 'PartnerSpecificPMResources_en.properties'
+
+GM_LOGO_CHANGES:
+  - 'customize.logo.file.path=/opt/tomcat/images/'
+  - 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'
+  - 'application.logo.gm.file.name=CommandIG_box_notagline_200x40_Trans.png'
+
+PM_LOGO_CHANGES:
+  - 'customize.logo.file.path=/opt/tomcat/images/'
+  - 'application.logo.file.name=CommandIG_Governance_Manager_30px_Trans.png'
+  - 'compagny.logo.file.name=CommandIG_box_notagline_200x40_Trans.png'
